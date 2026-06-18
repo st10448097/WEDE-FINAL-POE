@@ -1,0 +1,5 @@
+Ora_Ntebele, o.ntebs@gmail.com, 29ef52e7563626a96cea7f4b4085c124, buyer, 0123456789, 1
+Alwande_Dubazana, alwa@gmail.com, 81dc9bdb52d04dc20036dbd8313ed055 seller, 0987654321, 1
+Angela_Parmisser, ang@gmail.com, e99a18c428cb38d5f260853678922e03 buyer, 05551234561, 0
+Lulu_Zwane, lily@gmail.com, 5f4dcc3b5aa765d61d8327deb882cf99 seller, 0777123456, 1
+Thato_Mmako, thato@gmail.com, 098f6bcd4621d373cade4e832627b4f6 buyer, 0333123456, 1

@@ -1,6 +1,6 @@
 <?php
 session_start();
-include "db.php";
+include "DBConn.php";
 
 $sql="SELECT * FROM products";
 $result=mysqli_query($conn,$sql);
