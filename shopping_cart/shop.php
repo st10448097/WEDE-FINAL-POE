@@ -156,7 +156,7 @@ $cart_count = count($_SESSION['cart'] ?? []);
             <?php while($item = mysqli_fetch_assoc($clothing)): ?>
                 <div class="product-card-wrapper">
                     <!-- Clicking image or product info goes to details -->
-                    <a href="product_details.php<?php echo $item['clothing_id']; ?>" 
+                    <a href="product_details.php?id=<?php echo $item['clothing_id']; ?>" 
                        style="text-decoration: none; color: inherit;">
                         <div class="product-image" style="background-image: url('<?php echo htmlspecialchars($item['image_url'] ?: 'https://via.placeholder.com/300x300?text=No+Image'); ?>');">
                             <?php if(!$item['image_url']): ?>
