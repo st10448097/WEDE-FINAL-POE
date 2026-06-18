@@ -1,4 +1,3 @@
-# WEDE-FINAL-POE
 Overview 
 Past Times is a simple web-based second-hand clothing store application. It allows users to register, log in, browse products, add items to a shopping cart, and complete a purchase.  Administrators can manage user accounts and oversee the system. The application is designed to be easy to use, with clear navigation and essential e-commerce functionality.
 Setup instructions:
@@ -31,6 +30,28 @@ Users can:
 •	Update item quantities
 •	Remove items from the cart
 •	Changes are applied instantly before checkout.
+Seller Clothing Submission
+•	Sellers can submit requests to sell clothing items on the platform
+•	When submitting an item, the seller must provide:
+•	A description of the clothing item
+•	An image of the item
+•	The clothing brand
+•	Submitted items are reviewed by the administrator before being made available for purchase.
+Administrator Communication
+•	Administrators can communicate with both sellers and buyers through the platform
+•	This communication helps:
+•	Verify item details before approval
+•	Ensure clothing items match their descriptions and images
+•	Resolve buyer and seller inquiries
+•	Maintain quality control of listed products
+•	Ensure that purchased items are delivered correctly and in good condition,
+Product Verification 
+•	All seller-submitted items are subject to review and verification.
+•	Administrators ensure:
+•	Images accurately represent the product
+•	Clothing items meet platform standards
+•	Buyers receive the correct items in satisfactory condition.
+
 Product Reviews
 •	Customers can submit reviews on items
 •	Help other users make informed purchasing decisions
@@ -59,4 +80,3 @@ User Profile
 Resetting the Database
 If needed, you can reset the system by re-running: http://localhost/ClothesStore/loadClothingStore.php
 This will recreate all tables and reload the default data.  
-
