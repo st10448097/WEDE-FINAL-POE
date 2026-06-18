@@ -45,11 +45,14 @@ if ($user_role == 'seller') {
     $total_items = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt))['total'];
 }
 
-// Get unread messages (messages where user is receiver and not read)
+// Get unread messages
 $stmt = mysqli_prepare($conn, "SELECT COUNT(*) as unread FROM message WHERE receiver_id = ? AND is_read = 0");
 mysqli_stmt_bind_param($stmt, "i", $user_id);
 mysqli_stmt_execute($stmt);
 $unread_messages = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt))['unread'];
+
+// Get cart count
+$cart_count = count($_SESSION['cart'] ?? []);
 
 // Get recent messages
 $recent_messages = [];
@@ -108,30 +111,12 @@ if (mysqli_num_rows($has_orders_table) > 0) {
             align-items: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .header-logo-icon {
-            width: 45px;
-            height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .header-logo-icon svg {
-            width: 100%;
-            height: auto;
-        }
-        .header h1 { 
-            font-size: 1.8em; 
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .header-logo-icon { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; }
+        .header-logo-icon svg { width: 100%; height: auto; }
+        .header h1 { font-size: 1.8em; display: flex; align-items: center; gap: 10px; }
         .header h1 span { font-size: 0.6em; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 20px; margin-left: 10px; }
-        .user-menu { display: flex; align-items: center; gap: 20px; }
+        .user-menu { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
         .user-menu .role-badge { background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px; font-size: 0.9em; }
         .user-menu a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 5px; transition: background 0.3s; }
         .user-menu a:hover { background: rgba(255,255,255,0.2); }
@@ -267,6 +252,8 @@ if (mysqli_num_rows($has_orders_table) > 0) {
         .action-btn:hover { background: #5a3d82; }
         .action-btn.secondary { background: #6c757d; }
         .action-btn.secondary:hover { background: #5a6268; }
+        .action-btn.shop { background: #28a745; }
+        .action-btn.shop:hover { background: #218838; }
         
         /* Message List */
         .message-item {
@@ -310,24 +297,19 @@ if (mysqli_num_rows($has_orders_table) > 0) {
     <div class="header">
         <div class="header-left">
             <div class="header-logo-icon">
-                <!-- Simple clock SVG icon -->
                 <svg width="45" height="45" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="30" cy="30" r="28" fill="#ffffff" stroke="#ffffff" stroke-width="2" opacity="0.3"/>
                     <circle cx="30" cy="30" r="24" fill="rgba(255,255,255,0.1)"/>
-                    <!-- Clock numbers -->
                     <text x="30" y="10" text-anchor="middle" font-size="8" fill="white" font-weight="bold">12</text>
                     <text x="48" y="33" text-anchor="middle" font-size="8" fill="white" font-weight="bold">3</text>
                     <text x="30" y="56" text-anchor="middle" font-size="8" fill="white" font-weight="bold">6</text>
                     <text x="12" y="33" text-anchor="middle" font-size="8" fill="white" font-weight="bold">9</text>
-                    <!-- Hour marks -->
                     <line x1="30" y1="8" x2="30" y2="13" stroke="white" stroke-width="1.5" opacity="0.8"/>
                     <line x1="52" y1="30" x2="47" y2="30" stroke="white" stroke-width="1.5" opacity="0.8"/>
                     <line x1="30" y1="52" x2="30" y2="47" stroke="white" stroke-width="1.5" opacity="0.8"/>
                     <line x1="8" y1="30" x2="13" y2="30" stroke="white" stroke-width="1.5" opacity="0.8"/>
-                    <!-- Clock hands pointing to 10:10 -->
                     <line x1="30" y1="30" x2="30" y2="12" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
                     <line x1="30" y1="30" x2="42" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                    <!-- Center dot -->
                     <circle cx="30" cy="30" r="2.5" fill="white"/>
                 </svg>
             </div>
@@ -336,6 +318,8 @@ if (mysqli_num_rows($has_orders_table) > 0) {
         <div class="user-menu">
             <span class="role-badge">👤 <?php echo htmlspecialchars($user_name); ?></span>
             <span class="role-badge">🎯 <?php echo ucfirst($user_role); ?></span>
+            <a href="shop.php">🛍️ Shop</a>
+            <a href="cart.php">🛒 Cart (<?php echo $cart_count; ?>)</a>
             <a href="logout.php">🚪 Logout</a>
         </div>
     </div>
@@ -372,9 +356,9 @@ if (mysqli_num_rows($has_orders_table) > 0) {
                     <div class="label">Available Items</div>
                 </div>
                 <div class="stat-card">
-                    <div class="icon">📦</div>
-                    <div class="number">0</div>
-                    <div class="label">My Orders</div>
+                    <div class="icon">🛒</div>
+                    <div class="number"><?php echo $cart_count; ?></div>
+                    <div class="label">Cart Items</div>
                 </div>
             <?php endif; ?>
             <div class="stat-card">
@@ -391,16 +375,13 @@ if (mysqli_num_rows($has_orders_table) > 0) {
         
         <!-- Quick Actions -->
         <div class="quick-actions">
+            <a href="shop.php" class="action-btn shop">🛍️ Browse Shop</a>
+            <a href="cart.php" class="action-btn">🛒 View Cart (<?php echo $cart_count; ?>)</a>
             <?php if ($user_role == 'seller'): ?>
                 <a href="seller_submit_request.php" class="action-btn">📦 + Sell Your Clothes</a>
-                <a href="my_requests.php" class="action-btn">📋 My Requests</a>
-                <a href="seller_messages.php" class="action-btn">💬 Messages (<?php echo $unread_messages; ?>)</a>
-            <?php else: ?>
-                <a href="shop.php" class="action-btn">🛍️ Browse Shop</a>
-                <a href="cart.php" class="action-btn">🛒 View Cart (<?php echo count($_SESSION['cart'] ?? []); ?>)</a>
-                <a href="my_orders.php" class="action-btn">📦 My Orders</a>
-                <a href="messages.php" class="action-btn">💬 Contact Support</a>
+                <a href="my_seller_requests.php" class="action-btn">📋 My Requests</a>
             <?php endif; ?>
+            <a href="<?php echo ($user_role == 'seller') ? 'seller_messages.php' : 'admin_messages.php'; ?>" class="action-btn">💬 Messages</a>
         </div>
         
         <div class="dashboard-grid">
@@ -408,7 +389,7 @@ if (mysqli_num_rows($has_orders_table) > 0) {
             <div class="card">
                 <div class="card-header">
                     <h3>💬 Recent Messages</h3>
-                    <a href="<?php echo ($user_role == 'seller') ? 'seller_messages.php' : 'messages.php'; ?>"></a>
+                    <a href="<?php echo ($user_role == 'seller') ? 'seller_messages.php' : 'admin_messages.php'; ?>">View All →</a>
                 </div>
                 <div class="card-body">
                     <?php if (mysqli_num_rows($recent_messages) > 0): ?>
@@ -435,7 +416,7 @@ if (mysqli_num_rows($has_orders_table) > 0) {
                 <div class="card">
                     <div class="card-header">
                         <h3>📋 Recent Sell Requests</h3>
-                        <a href="my_requests.php">View All →</a>
+                        <a href="my_seller_requests.php">View All →</a>
                     </div>
                     <div class="card-body">
                         <?php if (mysqli_num_rows($recent_requests) > 0): ?>
@@ -447,7 +428,7 @@ if (mysqli_num_rows($has_orders_table) > 0) {
                                     <?php while($req = mysqli_fetch_assoc($recent_requests)): ?>
                                     <tr>
                                         <td><?php echo htmlspecialchars($req['clothing_name']); ?></td>
-                                        <td>$<?php echo number_format($req['price'], 2); ?></td>
+                                        <td>R<?php echo number_format($req['price'], 2); ?></td>
                                         <td>
                                             <span class="badge badge-<?php echo $req['status']; ?>">
                                                 <?php echo ucfirst($req['status']); ?>
@@ -493,18 +474,21 @@ if (mysqli_num_rows($has_orders_table) > 0) {
                         <?php if (mysqli_num_rows($available_clothing) > 0): ?>
                             <div class="products-grid">
                                 <?php while($item = mysqli_fetch_assoc($available_clothing)): ?>
-                                    <div class="product-card" onclick="location.href='product_details.php?id=<?php echo $item['clothing_id']; ?>'">
-                                        <div class="product-image" style="background-image: url('<?php echo htmlspecialchars($item['image_url'] ?: 'images/placeholder.jpg'); ?>'); background-size: cover;">
-                                            <?php if(!$item['image_url']): ?>
-                                                <span style="color: #999;">No Image</span>
-                                            <?php endif; ?>
+                                    <a href="product_details.php?id=<?php echo $item['clothing_id']; ?>" 
+                                       style="text-decoration: none; color: inherit; display: block;">
+                                        <div class="product-card">
+                                            <div class="product-image" style="background-image: url('<?php echo htmlspecialchars($item['image_url'] ?: 'images/placeholder.jpg'); ?>'); background-size: cover;">
+                                                <?php if(!$item['image_url']): ?>
+                                                    <span style="color: #999;">No Image</span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="product-info">
+                                                <div class="product-name"><?php echo htmlspecialchars($item['name']); ?></div>
+                                                <div class="product-price">R<?php echo number_format($item['price'], 2); ?></div>
+                                                <div class="product-stock">Stock: <?php echo $item['stock']; ?></div>
+                                            </div>
                                         </div>
-                                        <div class="product-info">
-                                            <div class="product-name"><?php echo htmlspecialchars($item['name']); ?></div>
-                                            <div class="product-price">$<?php echo number_format($item['price'], 2); ?></div>
-                                            <div class="product-stock">Stock: <?php echo $item['stock']; ?></div>
-                                        </div>
-                                    </div>
+                                    </a>
                                 <?php endwhile; ?>
                             </div>
                         <?php else: ?>
@@ -517,10 +501,9 @@ if (mysqli_num_rows($has_orders_table) > 0) {
                 <div class="card">
                     <div class="card-header">
                         <h3>📦 Recent Orders</h3>
-                        
                     </div>
                     <div class="card-body">
-                        <?php if (mysqli_num_rows($recent_orders) > 0): ?>
+                        <?php if ($has_orders_table && mysqli_num_rows($recent_orders) > 0): ?>
                             <table class="data-table">
                                 <thead><tr><th>Order #</th><th>Date</th><th>Total</th><th>Status</th></tr></thead>
                                 <tbody>
@@ -528,7 +511,7 @@ if (mysqli_num_rows($has_orders_table) > 0) {
                                     <tr>
                                         <td>#<?php echo $order['order_id']; ?></td>
                                         <td><?php echo date('M d', strtotime($order['order_date'])); ?></td>
-                                        <td>$<?php echo number_format($order['total_price'], 2); ?></td>
+                                        <td>R<?php echo number_format($order['total_price'], 2); ?></td>
                                         <td><span class="badge badge-<?php echo $order['status']; ?>"><?php echo ucfirst($order['status']); ?></span></td>
                                     </tr>
                                     <?php endwhile; ?>
@@ -558,7 +541,7 @@ if (mysqli_num_rows($has_orders_table) > 0) {
                     <tr><th>Phone</th><td><?php echo htmlspecialchars($user['phone']); ?></td></tr>
                     <tr><th>Role</th><td><?php echo ucfirst($user['role']); ?></td></tr>
                     <tr><th>Account Status</th><td><?php echo $user['verified'] ? '<span style="color: green;">✅ Verified</span>' : '<span style="color: orange;">⏳ Pending Verification</span>'; ?></td></tr>
-                    </table>
+                </table>
             </div>
         </div>
     </div>

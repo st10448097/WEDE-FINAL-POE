@@ -27,32 +27,85 @@ $cart_count = count($_SESSION['cart'] ?? []);
         .cart-count { background: #ffc107; color: #333; padding: 2px 8px; border-radius: 50%; font-size: 0.8em; margin-left: 5px; }
         .container { max-width: 1200px; margin: 40px auto; padding: 20px; }
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .product-card { 
-            background: white; border-radius: 10px; overflow: hidden; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: transform 0.3s; 
+        
+        .product-card-wrapper {
+            background: white; 
+            border-radius: 10px; 
+            overflow: hidden; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
         }
-        .product-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
+        .product-card-wrapper:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15); 
+        }
+        .product-info-top {
+            padding: 15px 15px 5px 15px;
+            flex: 1;
+        }
+        .product-info-bottom {
+            padding: 5px 15px 15px 15px;
+        }
         .product-image { 
-            height: 250px; background: #ddd; background-size: cover; 
-            background-position: center; display: flex; align-items: center; justify-content: center; 
+            height: 250px; 
+            background: #ddd; 
+            background-size: cover; 
+            background-position: center; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer;
         }
-        .product-info { padding: 15px; }
-        .product-name { font-weight: bold; font-size: 1.1em; margin-bottom: 8px; color: #333; }
-        .product-price { color: #764ba2; font-weight: bold; font-size: 1.3em; margin-bottom: 8px; }
-        .product-category { font-size: 0.8em; color: #666; margin-bottom: 10px; }
-        .product-stock { font-size: 0.85em; color: #28a745; margin-bottom: 10px; }
-        .add-to-cart-form { display: flex; gap: 8px; align-items: center; }
-        .quantity-input { width: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 5px; text-align: center; }
+        .product-name { 
+            font-weight: bold; 
+            font-size: 1.1em; 
+            margin-bottom: 8px; 
+            color: #333; 
+        }
+        .product-price { 
+            color: #764ba2; 
+            font-weight: bold; 
+            font-size: 1.3em; 
+            margin-bottom: 8px; 
+        }
+        .product-category { 
+            font-size: 0.8em; 
+            color: #666; 
+            margin-bottom: 10px; 
+        }
+        .product-stock { 
+            font-size: 0.85em; 
+            color: #28a745; 
+            margin-bottom: 10px; 
+        }
+        .add-to-cart-form { 
+            display: flex; 
+            gap: 8px; 
+            align-items: center; 
+        }
+        .quantity-input { 
+            width: 60px; 
+            padding: 8px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            text-align: center; 
+        }
         .btn-add { 
-            flex: 1; background: #764ba2; color: white; padding: 10px; border: none; 
-            border-radius: 5px; cursor: pointer; font-weight: bold; transition: background 0.3s; 
+            flex: 1; 
+            background: #764ba2; 
+            color: white; 
+            padding: 10px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: background 0.3s; 
         }
-        .btn-add:hover { background: #5a3d82; }
-        .btn-view { 
-            display: block; text-align: center; margin-top: 8px; color: #764ba2; 
-            text-decoration: none; font-size: 0.9em; 
+        .btn-add:hover { 
+            background: #5a3d82; 
         }
-        .btn-view:hover { text-decoration: underline; }
         .welcome-text { opacity: 0.9; }
         h2 { color: #764ba2; margin-bottom: 25px; }
         .empty-shop { text-align: center; padding: 50px; color: #999; }
@@ -101,18 +154,25 @@ $cart_count = count($_SESSION['cart'] ?? []);
         <?php if (mysqli_num_rows($clothing) > 0): ?>
         <div class="products-grid">
             <?php while($item = mysqli_fetch_assoc($clothing)): ?>
-                <div class="product-card">
-                    <div class="product-image" style="background-image: url('<?php echo htmlspecialchars($item['image_url'] ?: 'https://via.placeholder.com/300x300?text=No+Image'); ?>');">
-                        <?php if(!$item['image_url']): ?>
-                            <span style="color: #999;">No Image</span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="product-info">
-                        <div class="product-name"><?php echo htmlspecialchars($item['name']); ?></div>
-                        <div class="product-price">R<?php echo number_format($item['price'], 2); ?></div>
-                        <div class="product-category"><?php echo ucfirst($item['category']); ?></div>
-                        <div class="product-stock">✅ In Stock (<?php echo $item['stock']; ?>)</div>
-                        
+                <div class="product-card-wrapper">
+                    <!-- Clicking image or product info goes to details -->
+                    <a href="product_details.php?id=<?php echo $item['clothing_id']; ?>" 
+                       style="text-decoration: none; color: inherit;">
+                        <div class="product-image" style="background-image: url('<?php echo htmlspecialchars($item['image_url'] ?: 'https://via.placeholder.com/300x300?text=No+Image'); ?>');">
+                            <?php if(!$item['image_url']): ?>
+                                <span style="color: #999;">No Image</span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="product-info-top">
+                            <div class="product-name"><?php echo htmlspecialchars($item['name']); ?></div>
+                            <div class="product-price">R<?php echo number_format($item['price'], 2); ?></div>
+                            <div class="product-category"><?php echo ucfirst($item['category']); ?></div>
+                            <div class="product-stock">✅ In Stock (<?php echo $item['stock']; ?>)</div>
+                        </div>
+                    </a>
+                    
+                    <!-- Add to cart form is separate -->
+                    <div class="product-info-bottom">
                         <form method="POST" action="add_to_cart.php" class="add-to-cart-form">
                             <input type="hidden" name="product_id" value="<?php echo $item['clothing_id']; ?>">
                             <input type="hidden" name="product_name" value="<?php echo htmlspecialchars($item['name']); ?>">
@@ -121,8 +181,6 @@ $cart_count = count($_SESSION['cart'] ?? []);
                             <input type="number" name="quantity" value="1" min="1" max="<?php echo $item['stock']; ?>" class="quantity-input">
                             <button type="submit" class="btn-add">Add to Cart</button>
                         </form>
-                        
-                        <a href="product_details.php?id=<?php echo $item['clothing_id']; ?>" class="btn-view">View Details →</a>
                     </div>
                 </div>
             <?php endwhile; ?>
