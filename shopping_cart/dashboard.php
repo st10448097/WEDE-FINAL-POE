@@ -474,7 +474,7 @@ if (mysqli_num_rows($has_orders_table) > 0) {
                         <?php if (mysqli_num_rows($available_clothing) > 0): ?>
                             <div class="products-grid">
                                 <?php while($item = mysqli_fetch_assoc($available_clothing)): ?>
-                                    <a href="product_details.php?id=<?php echo $item['clothing_id']; ?>" 
+                                    <a href="product_details.php<?php echo $item['clothing_id']; ?>" 
                                        style="text-decoration: none; color: inherit; display: block;">
                                         <div class="product-card">
                                             <div class="product-image" style="background-image: url('<?php echo htmlspecialchars($item['image_url'] ?: 'images/placeholder.jpg'); ?>'); background-size: cover;">

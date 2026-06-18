@@ -50,7 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_review']) && $h
     mysqli_stmt_execute($insert);
     
     // Refresh page to show new review
-    header("Location: product_details.php?id=" . $product_id);
+    header("Location: product_details.php" . $product_id);
     exit();
 }
 
