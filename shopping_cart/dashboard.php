@@ -81,11 +81,17 @@ if ($user_role == 'seller') {
     $recent_requests = mysqli_stmt_get_result($stmt);
 }
 
-// Fetch available clothing items for buyers to browse
+// Fetch ONLY 2 available clothing items for the buyer dashboard preview
+// This limits the New Arrivals section to show a teaser of just 2 products
 $available_clothing = [];
-$stmt = mysqli_prepare($conn, "SELECT * FROM clothing WHERE stock > 0 ORDER BY created_at DESC LIMIT 8");
+$stmt = mysqli_prepare($conn, "SELECT * FROM clothing WHERE stock > 0 ORDER BY created_at DESC LIMIT 2");
 mysqli_stmt_execute($stmt);
 $available_clothing = mysqli_stmt_get_result($stmt);
+
+// Get the TOTAL count of all available products for the "View All" link display
+// Used to show users how many items are in the full shop before they click through
+$total_products_query = mysqli_query($conn, "SELECT COUNT(*) as total FROM clothing WHERE stock > 0");
+$total_products = mysqli_fetch_assoc($total_products_query)['total'];
 
 // Check if orders table exists and fetch recent orders for buyers
 $recent_orders = [];
@@ -191,7 +197,18 @@ if (mysqli_num_rows($has_orders_table) > 0) {
             align-items: center;
         }
         .card-header h3 { color: #764ba2; }
-        .card-header a { color: #764ba2; text-decoration: none; font-size: 0.9em; }
+        /* "View All" link in card header - styled to look like a clickable action */
+        .card-header a { 
+            color: #764ba2; 
+            text-decoration: none; 
+            font-size: 0.9em; 
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        .card-header a:hover { 
+            color: #5a3d82; /* Darker purple on hover */
+            text-decoration: underline; 
+        }
         .card-body { padding: 20px; }
         
         /* Tables */
@@ -200,29 +217,36 @@ if (mysqli_num_rows($has_orders_table) > 0) {
         .data-table th { color: #666; font-weight: 600; font-size: 0.9em; }
         .data-table tr:hover { background: #f8f9fa; } /* Row highlight */
         
-        /* Product Grid */
+        /* Product Grid - displays exactly 2 product cards on buyer dashboard */
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Auto-fill responsive grid */
+            /* Creates 2 equal columns for the preview cards */
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
         }
+        /* Individual product card in the preview grid */
         .product-card {
             background: #f8f9fa;
             border-radius: 10px;
             overflow: hidden;
             transition: transform 0.3s;
-            cursor: pointer;
+            cursor: pointer; /* Indicates the entire card is clickable */
         }
-        .product-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .product-card:hover { 
+            transform: translateY(-3px); /* Subtle lift on hover */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); /* Shadow appears on hover */
+        }
+        /* Product image container with fixed height */
         .product-card .product-image {
             height: 150px;
-            background: #ddd; /* Placeholder background */
+            background: #ddd; /* Fallback background if no image */
             display: flex;
             align-items: center;
             justify-content: center;
-            background-size: cover;
-            background-position: center;
+            background-size: cover; /* Ensures image covers the area */
+            background-position: center; /* Centers the image */
         }
+        /* Product information section below the image */
         .product-card .product-info { padding: 12px; }
         .product-card .product-name { font-weight: bold; margin-bottom: 5px; }
         .product-card .product-price { color: #764ba2; font-weight: bold; }
@@ -279,12 +303,38 @@ if (mysqli_num_rows($has_orders_table) > 0) {
         .message-sender { font-weight: bold; }
         .message-time { font-size: 0.75em; color: #666; }
         
+        /* View All button for New Arrivals section */
+        /* Appears below the 2 product cards to encourage browsing the full shop */
+        .view-all-container {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee; /* Separator line above the button */
+        }
+        .btn-view-all {
+            display: inline-block;
+            padding: 10px 25px;
+            background: #764ba2;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px; /* Pill shape */
+            font-weight: bold;
+            font-size: 0.95em;
+            transition: background 0.3s, transform 0.3s;
+        }
+        .btn-view-all:hover {
+            background: #5a3d82;
+            transform: translateY(-2px); /* Subtle lift on hover */
+        }
+        
         /* Responsive adjustments for mobile */
         @media (max-width: 768px) {
             .container { padding: 15px; }
             .dashboard-grid { grid-template-columns: 1fr; } /* Single column */
             .stats-grid { grid-template-columns: repeat(2, 1fr); } /* Two columns for stats */
             .header { flex-direction: column; gap: 15px; text-align: center; }
+            /* On mobile, products stack in a single column */
+            .products-grid { grid-template-columns: 1fr; }
         }
         
         /* Empty state placeholder */
@@ -292,17 +342,6 @@ if (mysqli_num_rows($has_orders_table) > 0) {
             text-align: center;
             padding: 40px;
             color: #999;
-        }
-        /* Button to view all items */
-        .btn-view-all {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 8px 15px;
-            background: #764ba2;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 0.9em;
         }
     </style>
 </head>
@@ -370,10 +409,10 @@ if (mysqli_num_rows($has_orders_table) > 0) {
                     <div class="label">Items Sold</div>
                 </div>
             <?php else: ?>
-                <!-- Buyer stats: Available items in shop -->
+                <!-- Buyer stats: Total available items in shop -->
                 <div class="stat-card">
                     <div class="icon">🛍️</div>
-                    <div class="number"><?php echo mysqli_num_rows($available_clothing); ?></div>
+                    <div class="number"><?php echo $total_products; ?></div>
                     <div class="label">Available Items</div>
                 </div>
                 <!-- Buyer stats: Items in cart -->
@@ -494,27 +533,35 @@ if (mysqli_num_rows($has_orders_table) > 0) {
                     </div>
                 </div>
             <?php else: ?>
-                <!-- Buyer: Available Products (New Arrivals) -->
+                <!-- ============================================================ -->
+                <!-- BUYER: New Arrivals Section - Shows ONLY 2 preview products -->
+                <!-- Users must click through to product details or "View All"   -->
+                <!-- to see the complete product catalog                        -->
+                <!-- ============================================================ -->
                 <div class="card">
                     <div class="card-header">
                         <h3>🛍️ New Arrivals</h3>
-                        <a href="shop.php">View All →</a>
+                        <!-- Link to full shop shows total available items count -->
+                        <a href="shop.php">View All (<?php echo $total_products; ?>) →</a>
                     </div>
                     <div class="card-body">
                         <?php if (mysqli_num_rows($available_clothing) > 0): ?>
+                            <!-- Grid displays exactly 2 product cards as a preview -->
                             <div class="products-grid">
-                                <!-- Loop through available clothing items -->
+                                <!-- Loop through ONLY the 2 fetched products -->
                                 <?php while($item = mysqli_fetch_assoc($available_clothing)): ?>
-                                    <!-- Each product card links to product details page -->
+                                    <!-- Each product card is a link to the full product details page -->
+                                    <!-- Clicking anywhere on the card takes user to product_details.php -->
                                     <a href="product_details.php?id=<?php echo $item['clothing_id']; ?>" 
                                        style="text-decoration: none; color: inherit; display: block;">
                                         <div class="product-card">
+                                            <!-- Product image with fallback placeholder -->
                                             <div class="product-image" style="background-image: url('<?php echo htmlspecialchars($item['image_url'] ?: 'images/placeholder.jpg'); ?>'); background-size: cover;">
-                                                <!-- Show placeholder text if no image available -->
                                                 <?php if(!$item['image_url']): ?>
                                                     <span style="color: #999;">No Image</span>
                                                 <?php endif; ?>
                                             </div>
+                                            <!-- Product name, price, and stock info -->
                                             <div class="product-info">
                                                 <div class="product-name"><?php echo htmlspecialchars($item['name']); ?></div>
                                                 <div class="product-price">R<?php echo number_format($item['price'], 2); ?></div>
@@ -524,7 +571,15 @@ if (mysqli_num_rows($has_orders_table) > 0) {
                                     </a>
                                 <?php endwhile; ?>
                             </div>
+                            <!-- "View All Products" button appears below the 2 preview cards -->
+                            <!-- Encourages users to browse the complete product catalog -->
+                            <div class="view-all-container">
+                                <a href="shop.php" class="btn-view-all">
+                                    🛍️ View All <?php echo $total_products; ?> Products →
+                                </a>
+                            </div>
                         <?php else: ?>
+                            <!-- Empty state when no products are available -->
                             <div class="empty-state">No products available at the moment. Check back soon!</div>
                         <?php endif; ?>
                     </div>
